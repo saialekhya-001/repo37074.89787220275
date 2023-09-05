@@ -41,7 +41,17 @@
 			},
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "// made some changes",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "https://postman.com/echo"
 			},
 			"response": []
 		}
