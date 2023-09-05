@@ -1,41 +1,57 @@
 {
 	"info": {
-		"_postman_id": "e69656e2-34d5-4094-8a97-98d6e8c0ef99",
-		"name": "test collection for failover strategy",
+		"_postman_id": "6248b9e1-68e8-458e-bb3e-0ee2e613e2bb",
+		"name": "Integration testing",
+		"description": "# ⛓️ Get started here\n\nPostman allows you to test your APIs using simple Javascript code. You can evaluate your response body, headers, cookies, and more using the [ChaiJS BDD](https://www.chaijs.com/api/bdd/) syntax.\n\nThis template guides you through the process of setting up an integration test to ensure that all individual components of an API function together seamlessly.\n\nThe API under test in this collection includes three endpoints for registering and receiving a token, accessing your unique generated name, and unregistering a token:\n\n- POST `/register`\n- POST `/unregister`\n- GET `/my-name`\n    \n\nBy setting up requests in the order of the operation, we can test the flow of data to and from the endpoints and ensure they work together as expected. We also verify that the data persists between requests on the back end.\n\n## 🔖 **How to use this template**\n\n**Step 1:** Check out the requests' documentation to learn more about -\n\n- what each request is meant to do.\n- the tests we've added against each one.\n    \n\n**Step 2:** Run this collection by clicking on \"Run\".\n\n<img src=\"https://content.pstmn.io/84019b0f-69c8-4c5f-98b9-2c90a6f9a0b1/Y29sbGVjdGlvbi1ydW5uZXItYnV0dG9uLmpwZWc=\" alt=\"\" height=\"103\" width=\"266\">\n\n**Step 3:** To customize this template, replace the request URLs with your API endpoints and add or edit the tests if needed.\n\n## ℹ️ Resources\n\n[Scripting in Postman](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/)\n\n[Test script examples](https://learning.postman.com/docs/writing-scripts/script-references/test-examples/)\n\n[Postman Sandbox API reference](https://learning.postman.com/docs/sending-requests/grpc/postman-sandbox-api/#writing-assertions)\n\n[Using the Collection Runner](https://learning.postman.com/docs/collections/running-collections/intro-to-collection-runs/)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "echo req",
+			"name": "Register",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "b0f5a585-641a-498f-a7ac-e47123d3c166",
 						"exec": [
-							"",
-							"// hehe world Alekhya",
-							"// hello say hello ! ! ! ! ! ! ! ! ! !  ! ! !// hehe world Alekhya",
+							"pm.test(\"An access token is returned\", () => {",
+							"    pm.expect(pm.response.json()).to.have.property('token')",
+							"    pm.expect(pm.response.json().token).to.be.a('string')",
+							"    // Set the collection-scope \"token\" variable to the token received from the API",
+							"    // This lets us use it in other requests",
+							"    pm.collectionVariables.set('token', pm.response.json().token)",
+							"})",
 							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
-			"id": "1302d176-a80b-4370-855d-2d1bc887197e",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
+			"_postman_id": "c1814cc7-0638-4ac9-872f-b513b068685b",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
-				"url": "https://postman.com/echo"
+				"url": "{{baseUrl}}/register",
+				"description": "This returns a `token` that you can use to retrieve information later on.\n\nWe have included a test to confirm if a token is returned. We have also added test scripts to copy the token to the `token` collection variable. This makes it easy for us to reuse this token in other requests in the collection."
 			},
 			"response": []
 		},
 		{
-			"name": "New Request",
-			"id": "4c221d5c-346f-4943-8923-ee6d3d7320f7",
+			"name": "Get name",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"A name is returned\", () => {",
+							"    pm.expect(pm.response.json()).to.have.property('name');",
+							"    pm.expect(pm.response.json().name).to.be.a('string');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"_postman_id": "ba8281c2-fd60-4867-8368-bb7813da6411",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -44,16 +60,104 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "// made some changes",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": "https://postman.com/echo"
+				"url": {
+					"raw": "{{baseUrl}}/my-name?token={{token}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"my-name"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{token}}"
+						}
+					]
+				},
+				"description": "This request uses the saved `token` collection variable to access a secret 'name' stored against that token.\n\nIn this request, we used the `token` collection variable as a query param to fetch the name generated for that token. We have added a test to check that a name is correctly returned."
 			},
 			"response": []
+		},
+		{
+			"name": "Unregister",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Returns 200 OK status\", () => {",
+							"    pm.response.to.have.status(200)",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"_postman_id": "06f3af14-5f85-4bc1-bf75-274dcb33b7ec",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"{{token}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/unregister",
+				"description": "This request un-registers a token by using the token collection variable in the POST body.\n\nWe also added a test to ensure the response has a 200 OK status code."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "6ab5adf0-14ea-41c6-8244-7a9aac0fdbdd",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "e5d58d83-28b9-41a0-8300-83a490c54b57",
+				"type": "text/javascript",
+				"exec": [
+					"// changed for BB",
+					"// changed for GH",
+					"// chnaged for GL",
+					"// enabled auto-save after we made changes",
+					"//now making changes what for test script"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "5901c60e-04b3-48c6-a235-e1442fb35706",
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "07d5b6bc-1910-413a-a6b2-88ceba17bd32",
+			"key": "baseUrl",
+			"value": "https://postman-integration-testing.glitch.me/",
+			"type": "string"
 		}
 	]
 }
